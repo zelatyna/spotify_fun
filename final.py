@@ -56,27 +56,27 @@ def get_artist_albums(artist_name, offset=0):
     return album_ids
 
 def get_album_tracks(album_id, offset=0):
-    track_ids= []
+    track_ids= {}
 
     params={'offset': offset}
 
     endpoint='albums/' + id + '/tracks'
     req= requests.get(url=service_url+endpoint, params=params)
     print 'CALLING:', req.url
-
+    info=req.json()
 
     if req.status_code==200:
-        info=req.json()
         for i in info['items']:
-            track_ids.append(i['id'])
+            ##make sure we don't duplicate songs
+            if i['id'] not in track_ids:
+                track_ids.update ( { i['id'] : i['name'] } )
 
         if info['offset'] + info['limit'] < info['total']:
             offset = offset + info['limit']
-            track_ids += get_album_tracks(album_id, offset)
+            track_ids.update(get_album_tracks(album_id, offset))
     else:
         print 'Retrieval failed'
         print req.text
-    print len(track_ids)
     return track_ids
 
 
@@ -162,27 +162,31 @@ def create_playlist(artist_name, track_uris):
 
 
 #------MAIN -----------
+
 while True :
     artist_name=raw_input('Enter artist name:')
     if len(artist_name)<1: break
     album_ids=get_artist_albums(artist_name)
     print 'Total number of albums:' , len(album_ids)
-    track_ids=[]
+    tracks={}
     for id in album_ids:
-        track_ids+=get_album_tracks(id)
-    print 'Total number of tracks:' , len(track_ids)
-    ## Maximum: 100 IDs in this en point.
-    if len(track_ids)>100:
-        track_ids=track_ids[:100]
-    tracks_valence=get_tracks_valence(track_ids)
+        tracks.update(get_album_tracks(id))
+    print 'Total number of tracks:' , len(tracks)
+    if tracks:
+        track_ids=tracks.keys()
+        ## Maximum: 100 IDs in this en point.
+        if len(track_ids)>100:
+            track_ids=track_ids[:100]
+        tracks_valence=get_tracks_valence(track_ids)
 
-    ##let's sort the tracks in descending order of valence
-    sorted_list = [(k,v) for v,k in sorted([(v,k) for k,v in tracks_valence.items()], reverse=True )]
-    print sorted_list
+        ##let's sort the tracks in descending order of valence
+        sorted_list = [(k,v) for v,k in sorted([(v,k) for k,v in tracks_valence.items()], reverse=True )]
+        print 'The happiest song by %s : %s' % (artist_name, tracks[sorted_list[0][0]])
+        print 'The saddest song by %s : %s' % (artist_name, tracks[sorted_list[len(track_ids)-1][0]])
 
-    #transform key values to URIS in form spotify:track:4iV5W9uYEdYUVa79Axb7Rh and limit the list to 20 tracks
-    track_uris=['spotify:track:' + k for (k,v) in sorted_list[:10]]
-    create_playlist(artist_name, track_uris)
+        #transform key values to URIS in form spotify:track:4iV5W9uYEdYUVa79Axb7Rh and limit the list to 20 tracks
+        track_uris=['spotify:track:' + k for (k,v) in sorted_list[:10]]
+        create_playlist(artist_name, track_uris)
 
 
 

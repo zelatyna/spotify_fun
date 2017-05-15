@@ -48,7 +48,7 @@ def get_artist_albums(artist_name, offset=0):
     return album_ids
 
 def get_album_tracks(album_id, offset=0):
-    track_ids= []
+    track_ids= {}
 
     params={'offset': offset}
 
@@ -59,15 +59,16 @@ def get_album_tracks(album_id, offset=0):
 
     if req.status_code==200:
         for i in info['items']:
-            track_ids.append(i['id'])
+            ##make sure we don't duplicate songs
+            if i['id'] not in track_ids:
+                track_ids.update ( { i['id'] : i['name'] } )
 
         if info['offset'] + info['limit'] < info['total']:
             offset = offset + info['limit']
-            track_ids += get_album_tracks(album_id, offset)
+            track_ids.update(get_album_tracks(album_id, offset))
     else:
         print 'Retrieval failed'
         print req.text
-    print len(track_ids)
     return track_ids
 
 

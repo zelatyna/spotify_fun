@@ -7,9 +7,9 @@ params= {'q': 'radiohead',
 
 req= requests.get(url=service_url, params=params)
 
-info=req.json()
 
 if req.status_code==200:
+    info=req.json()
     for artist in info['artists']['items']:
         print 'Name: ' , artist['name']
         print 'ID: ', artist['id']

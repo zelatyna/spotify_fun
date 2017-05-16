@@ -10,14 +10,18 @@ def search_artist_id(artist_name):
             'type': 'artist'}
 
     req= requests.get(url=service_url+endpoint, params=params)
-    print 'CALLING:', req.url
-    info=req.json()
+    print( 'CALLING:', req.url)
     artist_id= None
+
     if req.status_code==200:
-        artist_id = info['artists']['items'][0]['id']
+        info=req.json()
+        try:
+            artist_id = info['artists']['items'][0]['id']
+        except IndexError:
+            print( 'Artist not found :(')
     else:
-        print 'Retrieval failed'
-        print req.text
+        print('Retrieval failed')
+        print( req.text)
     return artist_id
 
 
@@ -31,10 +35,10 @@ def get_artist_albums(artist_name, offset=0):
     if artist_id:
         endpoint='artists/'+ artist_id+'/albums'
         req= requests.get(url=service_url+endpoint, params=params)
-        print 'CALLING:', req.url
-        info=req.json()
+        print( 'CALLING:', req.url)
 
         if req.status_code==200:
+            info=req.json()
             for i in info['items']:
                 album_ids.append(i['id'])
 
@@ -42,8 +46,8 @@ def get_artist_albums(artist_name, offset=0):
                 offset = offset + info['limit']
                 album_ids += get_artist_albums(artist_name, offset)
         else:
-            print 'Retrieval failed'
-            print req.text
+            print( 'Retrieval failed')
+            print( req.text)
 
     return album_ids
 
@@ -54,7 +58,7 @@ def get_album_tracks(album_id, offset=0):
 
     endpoint='albums/' + id + '/tracks'
     req= requests.get(url=service_url+endpoint, params=params)
-    print 'CALLING:', req.url
+    print( 'CALLING:', req.url)
     info=req.json()
 
     if req.status_code==200:
@@ -67,20 +71,20 @@ def get_album_tracks(album_id, offset=0):
             offset = offset + info['limit']
             track_ids.update(get_album_tracks(album_id, offset))
     else:
-        print 'Retrieval failed'
-        print req.text
+        print( 'Retrieval failed')
+        print( req.text)
     return track_ids
 
 
 while True :
-    artist_name=raw_input('Enter artist name:')
+    artist_name=input('Enter artist name:')
     if len(artist_name)<1: break
     album_ids=get_artist_albums(artist_name)
-    print 'Total number of albums:' , len(album_ids)
-    track_ids=[]
+    print( 'Total number of albums:' , len(album_ids))
+    tracks={}
     for id in album_ids:
-        track_ids+=get_album_tracks(id)
-    print 'Total number of tracks:' , len(track_ids)
+        tracks.update(get_album_tracks(id))
+    print( 'Total number of tracks:' , len(tracks))
 
 
 

@@ -57,10 +57,10 @@ def get_access_token():
     if req_token.status_code==200:
         token_info=req_token.json()
         access_token=token_info['access_token']
-        print 'Authorization Code Flow completed successfully '
-        print access_token
+        print ('Authorization Code Flow completed successfully ')
+        print (access_token)
     else:
-        print req_token.reason
+        print (req_token.reason)
 
     return access_token
 

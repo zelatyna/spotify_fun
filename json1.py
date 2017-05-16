@@ -17,6 +17,6 @@ data='''{
 info=json.loads(data)
 
 
-print 'Name:', info['name']
-print 'Genre:', info['genres'][0]
-print 'Album:', info['debut_album']['name']
+print ('Name:', info['name'])
+print ('Genre:', info['genres'][0])
+print ('Album:', info['debut_album']['name'])

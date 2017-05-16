@@ -12,12 +12,12 @@ auth=requests.post(url=accounts_service_url,
 
 if auth.status_code==200:
     auth_json=auth.json( )
-    print auth_json
+    print (auth_json)
     access_token=auth_json['access_token']
 
 else:
-    print 'AUTHENTICATION FAILED'
-    print auth.text
+    print ('AUTHENTICATION FAILED')
+    print (auth.text)
 
 
 ##GET TRACK FEATURES USING THE ACCESS TOKEN (pass it in header)
@@ -33,4 +33,4 @@ req= requests.get(url=service_url,
                   )
 
 audio_features=req.json()
-print audio_features
+print (audio_features)
